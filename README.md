@@ -64,6 +64,32 @@ Each module contains:
 - Maven or Gradle
 - Docker (for Kafka, Redis, etc.)
 
+For the **web app** (optional): Node 18+, pnpm.
+
+---
+
+## 🌐 Web App (Standalone)
+
+This repo includes a standalone web app to browse the course (levels, modules, links to theory, exercises, solutions).
+
+**Run locally:**
+
+```bash
+pnpm install
+pnpm dev
+```
+
+Open http://localhost:3000 (or the port shown). Content (markdown, code) is served from the `level-*` folders at `/course-content`.
+
+**Build for production:**
+
+```bash
+pnpm build
+pnpm start
+```
+
+The server serves the static app and course content. You can also use this repo as a **submodule** in the [System Design Roadmap](https://github.com/ghrs123/system-design-roadmap) so the course appears inside the roadmap site; see `docs/integration-with-roadmap.md`.
+
 ---
 
 ## 🚀 How to Use This Course
