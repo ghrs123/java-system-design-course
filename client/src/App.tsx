@@ -1,16 +1,17 @@
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import LevelPage from "./pages/LevelPage";
-import ModulePage from "./pages/ModulePage";
-import NotFound from "./pages/NotFound";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/level/:id" component={LevelPage} />
-      <Route path="/level/:id/module/:moduleSlug" component={ModulePage} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
@@ -20,7 +21,12 @@ function Router() {
 function App() {
   return (
     <ErrorBoundary>
-      <Router />
+      <ThemeProvider defaultTheme="dark">
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

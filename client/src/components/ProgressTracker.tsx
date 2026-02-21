@@ -1,25 +1,38 @@
-interface TopicItem {
-  id: string;
-  title: string;
-}
+/*
+ * ─── Blueprint Engineering Theme ───
+ * ProgressTracker: Vertical progress indicator
+ */
+
+import type { Topic } from "@/lib/courseData";
 
 interface ProgressTrackerProps {
-  topics: TopicItem[];
+  topics: Topic[];
   activeIndex: number;
   accentColor: "cyan" | "amber";
 }
 
 export default function ProgressTracker({ topics, activeIndex, accentColor }: ProgressTrackerProps) {
-  const dotColor = accentColor === "cyan" ? "bg-[var(--primary)]" : "bg-[var(--accent)]";
-  const dotInactive = "bg-[var(--border)]";
-  const lineActive = accentColor === "cyan" ? "bg-[var(--primary)]" : "bg-[var(--accent)]";
-  const lineInactive = accentColor === "cyan" ? "bg-[var(--primary)]/30" : "bg-[var(--accent)]/30";
+  const dotColor = accentColor === "cyan" ? "bg-primary" : "bg-accent";
+  const dotInactive = "bg-border";
+  const lineColor = accentColor === "cyan" ? "bg-primary/30" : "bg-accent/30";
+  const lineActive = accentColor === "cyan" ? "bg-primary" : "bg-accent";
+
   return (
-    <div className="sticky top-24 hidden flex-col items-center gap-0 lg:flex">
+    <div className="hidden lg:flex flex-col items-center gap-0 sticky top-24">
       {topics.map((topic, i) => (
         <div key={topic.id} className="flex flex-col items-center">
-          <a href={"#topic-" + topic.id} className={"h-3 w-3 rounded-full transition-all duration-300 " + (i <= activeIndex ? dotColor : dotInactive) + (i === activeIndex ? " scale-125 ring-4 ring-[var(--primary)]/20" : "")} title={topic.title} />
-          {i < topics.length - 1 && <div className={"h-16 w-0.5 transition-colors duration-300 " + (i < activeIndex ? lineActive : lineInactive)} />}
+          <a
+            href={`#topic-${topic.id}`}
+            className={`w-3 h-3 rounded-full transition-all duration-300 ${
+              i <= activeIndex ? dotColor : dotInactive
+            } ${i === activeIndex ? "ring-4 ring-primary/20 scale-125" : ""}`}
+            title={topic.title}
+          />
+          {i < topics.length - 1 && (
+            <div className={`w-0.5 h-16 transition-colors duration-300 ${
+              i < activeIndex ? lineActive : lineColor
+            }`} />
+          )}
         </div>
       ))}
     </div>

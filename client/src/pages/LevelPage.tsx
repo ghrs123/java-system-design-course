@@ -1,7 +1,12 @@
+/*
+ * ─── Blueprint Engineering Theme ───
+ * LevelPage: Detail page for each level
+ */
+
 import Navbar from "@/components/Navbar";
 import ProgressTracker from "@/components/ProgressTracker";
 import TopicCard from "@/components/TopicCard";
-import { courseLevels } from "@/lib/courseData";
+import { levels } from "@/lib/courseData";
 import { ArrowLeft, ArrowRight, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "wouter";
@@ -9,10 +14,11 @@ import { Link, useParams } from "wouter";
 export default function LevelPage() {
   const params = useParams<{ id: string }>();
   const levelId = parseInt(params.id || "1", 10);
-  const level = courseLevels.find((l) => l.id === levelId);
+  const level = levels.find((l) => l.id === levelId);
   const [activeTopicIndex, setActiveTopicIndex] = useState(0);
-  const prevLevel = courseLevels.find((l) => l.id === levelId - 1);
-  const nextLevel = courseLevels.find((l) => l.id === levelId + 1);
+
+  const prevLevel = levels.find((l) => l.id === levelId - 1);
+  const nextLevel = levels.find((l) => l.id === levelId + 1);
 
   useEffect(() => {
     if (!level) return;
@@ -31,10 +37,12 @@ export default function LevelPage() {
       },
       { rootMargin: "-20% 0px -60% 0px" }
     );
+
     level.topics.forEach((topic) => {
-      const el = document.getElementById("topic-" + topic.id);
+      const el = document.getElementById(`topic-${topic.id}`);
       if (el) observer.observe(el);
     });
+
     return () => observer.disconnect();
   }, [level]);
 
@@ -45,108 +53,179 @@ export default function LevelPage() {
 
   if (!level) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="mb-4 font-mono text-2xl text-[var(--foreground)]">Nível não encontrado</h1>
-          <Link href="/" className="font-mono text-sm text-[var(--primary)]">Voltar ao início</Link>
+          <h1 className="font-mono text-2xl text-foreground mb-4">Nível não encontrado</h1>
+          <Link href="/" className="text-primary font-mono text-sm">Voltar ao início</Link>
         </div>
       </div>
     );
   }
 
   const isAmber = level.accentColor === "amber";
-  const topicsForTracker = level.topics.map((t) => ({ id: t.id, title: t.title }));
+  const accentColor = isAmber ? "amber" : "cyan";
+
+  const levelGradients = [
+    "from-cyan-500/15 to-primary/5",
+    "from-cyan-500/15 to-amber-500/10",
+    "from-amber-500/15 to-amber-500/5",
+    "from-amber-500/15 to-primary/5",
+  ];
+
+  const totalExercises = level.topics.reduce(
+    (acc, t) => acc + (t.exercises?.length || 0), 0
+  );
 
   return (
     <div className="min-h-screen">
       <Navbar />
-      <section className="relative overflow-hidden pt-16">
-        <div className="relative h-64 sm:h-80">
-          {level.image ? (
-            <img src={level.image} alt={level.title} className="h-full w-full object-cover opacity-50" />
-          ) : (
-            <div className={"h-full w-full " + (isAmber ? "bg-[var(--accent)]/10" : "bg-[var(--primary)]/10")} />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-b from-[var(--background)]/40 via-[var(--background)]/60 to-[var(--background)]" />
-          <div className="absolute left-0 right-0 top-6">
-            <div className="container mx-auto max-w-6xl px-4">
-              <nav className="flex items-center gap-2 font-mono text-xs text-[var(--muted-foreground)]">
-                <Link href="/" className="text-[var(--muted-foreground)] no-underline transition-colors hover:text-[var(--primary)]">Início</Link>
+
+      {/* ─── Level Hero ─── */}
+      <section className="relative pt-16 overflow-hidden">
+        <div className={`relative h-56 sm:h-72 bg-gradient-to-br ${levelGradients[levelId - 1]}`}>
+          {/* Blueprint grid */}
+          <svg className="absolute inset-0 w-full h-full opacity-10" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="hero-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="0.5"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#hero-grid)" />
+          </svg>
+          <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-background/50 to-background" />
+
+          {/* Breadcrumb */}
+          <div className="absolute top-6 left-0 right-0">
+            <div className="container max-w-6xl mx-auto px-4">
+              <nav className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
+                <Link href="/" className="hover:text-primary transition-colors no-underline text-muted-foreground">
+                  Início
+                </Link>
                 <ChevronRight size={12} />
-                <span className={isAmber ? "text-[var(--accent)]" : "text-[var(--primary)]"}>Nivel {String(level.id).padStart(2, "0")}</span>
+                <span className={isAmber ? "text-accent" : "text-primary"}>
+                  Nível {String(level.id).padStart(2, "0")}
+                </span>
               </nav>
             </div>
           </div>
+
+          {/* Level title */}
           <div className="absolute bottom-8 left-0 right-0">
-            <div className="container mx-auto max-w-6xl px-4">
-              <span className={"font-mono text-xs uppercase tracking-widest " + (isAmber ? "text-[var(--accent)]/80" : "text-[var(--primary)]/80")}>{level.subtitle}</span>
-              <h1 className="mt-2 font-mono text-3xl font-bold text-[var(--foreground)] sm:text-4xl lg:text-5xl">{level.title}</h1>
+            <div className="container max-w-6xl mx-auto px-4">
+              <span className={`font-mono text-xs uppercase tracking-widest ${
+                isAmber ? "text-accent/80" : "text-primary/80"
+              }`}>
+                {level.subtitle}
+              </span>
+              <h1 className="font-mono text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mt-2">
+                {level.title}
+              </h1>
             </div>
           </div>
         </div>
       </section>
+
+      {/* ─── Level Description ─── */}
       <section className="py-10">
-        <div className="container mx-auto max-w-6xl px-4">
-          <p className="max-w-3xl text-lg leading-relaxed text-[var(--muted-foreground)]">{level.description}</p>
-          <div className="mt-6 flex items-center gap-4 text-sm text-[var(--muted-foreground)]">
-            <span className={"rounded border px-3 py-1 font-mono " + (isAmber ? "border-[var(--accent)]/30 text-[var(--accent)]" : "border-[var(--primary)]/30 text-[var(--primary)]")}>{level.topics.length} módulos</span>
+        <div className="container max-w-6xl mx-auto px-4">
+          <p className="text-muted-foreground text-lg leading-relaxed max-w-3xl">
+            {level.description}
+          </p>
+          <div className="mt-6 flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+            <span className={`font-mono px-3 py-1 rounded border ${
+              isAmber ? "border-accent/30 text-accent" : "border-primary/30 text-primary"
+            }`}>
+              {level.topics.length} tópicos
+            </span>
+            <span className="font-mono text-xs text-muted-foreground/60">
+              {level.topics.reduce((acc, t) => acc + t.concepts.length, 0)} conceitos
+            </span>
+            <span className="font-mono text-xs text-muted-foreground/60">
+              {totalExercises} exercícios práticos
+            </span>
+            <span className="font-mono text-xs text-muted-foreground/60">
+              {level.topics.reduce((acc, t) => acc + t.codeExamples.length, 0)} exemplos de código
+            </span>
           </div>
         </div>
       </section>
+
+      {/* ─── Topics with Progress Tracker ─── */}
       <section className="py-10 pb-20">
-        <div className="container mx-auto max-w-6xl px-4">
+        <div className="container max-w-6xl mx-auto px-4">
           <div className="flex gap-10">
-            <ProgressTracker topics={topicsForTracker} activeIndex={activeTopicIndex} accentColor={level.accentColor} />
+            <ProgressTracker
+              topics={level.topics}
+              activeIndex={activeTopicIndex}
+              accentColor={accentColor as "cyan" | "amber"}
+            />
             <div className="flex-1 space-y-6">
               {level.topics.map((topic, index) => (
-                <div key={topic.id} id={"topic-" + topic.id}>
-                  <TopicCard topic={topic} index={index} levelId={level.id} accentColor={level.accentColor} />
+                <div key={topic.id} id={`topic-${topic.id}`}>
+                  <TopicCard
+                    topic={topic}
+                    index={index}
+                    accentColor={accentColor as "cyan" | "amber"}
+                  />
                 </div>
               ))}
             </div>
           </div>
         </div>
       </section>
-      <section className="border-t border-[var(--border)]/30 py-12">
-        <div className="container mx-auto max-w-6xl px-4">
+
+      {/* ─── Level Navigation ─── */}
+      <section className="py-12 border-t border-border/30">
+        <div className="container max-w-6xl mx-auto px-4">
           <div className="flex items-center justify-between">
             {prevLevel ? (
-              <Link href={"/level/" + prevLevel.id} className="group flex items-center gap-3 no-underline">
-                <ArrowLeft size={16} className="text-[var(--muted-foreground)] transition-colors group-hover:text-[var(--primary)]" />
+              <Link href={`/level/${prevLevel.id}`} className="flex items-center gap-3 group no-underline">
+                <ArrowLeft size={16} className="text-muted-foreground group-hover:text-primary transition-colors" />
                 <div>
-                  <span className="block font-mono text-xs text-[var(--muted-foreground)]">Nível anterior</span>
-                  <span className="font-mono text-sm text-[var(--foreground)] transition-colors group-hover:text-[var(--primary)]">{prevLevel.title}</span>
+                  <span className="text-xs text-muted-foreground font-mono block">Nível anterior</span>
+                  <span className="text-sm font-mono text-foreground group-hover:text-primary transition-colors">
+                    {prevLevel.title}
+                  </span>
                 </div>
               </Link>
             ) : (
-              <Link href="/" className="group flex items-center gap-3 no-underline">
-                <ArrowLeft size={16} className="text-[var(--muted-foreground)] transition-colors group-hover:text-[var(--primary)]" />
+              <Link href="/" className="flex items-center gap-3 group no-underline">
+                <ArrowLeft size={16} className="text-muted-foreground group-hover:text-primary transition-colors" />
                 <div>
-                  <span className="block font-mono text-xs text-[var(--muted-foreground)]">Voltar</span>
-                  <span className="font-mono text-sm text-[var(--foreground)] transition-colors group-hover:text-[var(--primary)]">Página Inicial</span>
+                  <span className="text-xs text-muted-foreground font-mono block">Voltar</span>
+                  <span className="text-sm font-mono text-foreground group-hover:text-primary transition-colors">
+                    Página Inicial
+                  </span>
                 </div>
               </Link>
             )}
+
             {nextLevel ? (
-              <Link href={"/level/" + nextLevel.id} className="group flex items-center gap-3 no-underline text-right">
+              <Link href={`/level/${nextLevel.id}`} className="flex items-center gap-3 group no-underline text-right">
                 <div>
-                  <span className="block font-mono text-xs text-[var(--muted-foreground)]">Próximo nível</span>
-                  <span className="font-mono text-sm text-[var(--foreground)] transition-colors group-hover:text-[var(--primary)]">{nextLevel.title}</span>
+                  <span className="text-xs text-muted-foreground font-mono block">Próximo nível</span>
+                  <span className="text-sm font-mono text-foreground group-hover:text-primary transition-colors">
+                    {nextLevel.title}
+                  </span>
                 </div>
-                <ArrowRight size={16} className="text-[var(--muted-foreground)] transition-colors group-hover:text-[var(--primary)]" />
+                <ArrowRight size={16} className="text-muted-foreground group-hover:text-primary transition-colors" />
               </Link>
             ) : (
               <div className="text-right">
-                <span className="block font-mono text-xs text-[var(--muted-foreground)]">Parabéns!</span>
-                <span className="font-mono text-sm text-[var(--accent)]">Curso Completo</span>
+                <span className="text-xs text-muted-foreground font-mono block">Parabéns!</span>
+                <span className="text-sm font-mono amber-glow text-accent">Curso Completo</span>
               </div>
             )}
           </div>
         </div>
       </section>
-      <footer className="border-t border-[var(--border)]/20 py-8">
+
+      {/* ─── Footer ─── */}
+      <footer className="py-8 border-t border-border/20">
         <div className="container text-center">
-          <p className="font-mono text-xs text-[var(--muted-foreground)]">Java System Design Course</p>
+          <p className="text-xs text-muted-foreground font-mono">
+            Java System Design Course &mdash; Construído para engenheiros que querem dominar sistemas distribuídos
+          </p>
         </div>
       </footer>
     </div>
